@@ -14,8 +14,8 @@ WATCHLIST = [
 PRICE_DROP_THRESHOLD = 0.05  # 5% drop triggers alert
 VOLUME_SPIKE_MULTIPLIER = 2  # volume > 2x avg volume triggers alert
 
-TELEGRAM_BOT_TOKEN = "YOUR_BOT_TOKEN_HERE"
-TELEGRAM_CHAT_ID = "YOUR_CHAT_ID_HERE"
+TELEGRAM_BOT_TOKEN = "7811885647:AAGaj5DyaSRREoQgT_LyYb8nAhtYxFFce_w"
+TELEGRAM_CHAT_ID = "798099140"
 
 # --- FUNCTIONS ---
 
@@ -38,13 +38,13 @@ def check_stock(symbol):
             return None
 
         # Calculate price drop since yesterday
-        today_close = hist['Close'][-1]
-        yesterday_close = hist['Close'][-2]
+        today_close = hist['Close'].iloc[-1]
+        yesterday_close = hist['Close'].iloc[-2]
         price_drop_pct = (yesterday_close - today_close) / yesterday_close
 
         # Average volume over last 5 days
         avg_volume = hist['Volume'][-6:-1].mean()
-        today_volume = hist['Volume'][-1]
+        today_volume = hist['Volume'].iloc[-1]
 
         volume_spike = today_volume > avg_volume * VOLUME_SPIKE_MULTIPLIER
 
