@@ -4,6 +4,7 @@ import pandas as pd
 import numpy as np
 import re
 from bs4 import BeautifulSoup
+import os
 import urllib.request
 
 # --- CONFIG ---
@@ -19,9 +20,8 @@ VOLUME_SPIKE_MULTIPLIER = 2  # volume > 2x avg volume triggers alert
 RSI_OVERSOLD = 30            # RSI below 30 is oversold
 PUT_CALL_THRESHOLD = 1.5     # put/call ratio trigger
 
-TELEGRAM_BOT_TOKEN = "7811885647:AAGaj5DyaSRREoQgT_LyYb8nAhtYxFFce_w"
-TELEGRAM_CHAT_ID = "798099140"
-
+TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
+TELEGRAM_CHAT_ID = os.getenv("TELEGRAM_CHAT_ID")
 # --- FUNCTIONS ---
 
 def send_telegram_message(message):
