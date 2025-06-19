@@ -45,6 +45,17 @@ def webhook():
 
     return 'Updated', 200
 
+@app.route('/alerts', methods=['GET'])
+def get_alerts():
+    try:
+        with open('current_alerts.txt', 'r') as f:
+            alerts = f.read()
+        if not alerts.strip():
+            return 'No current alerts.', 200
+        return alerts, 200
+    except FileNotFoundError:
+        return 'No current alerts.', 200
+
 if __name__ == "__main__":
     start_script()
     app.run(host='0.0.0.0', port=5000)

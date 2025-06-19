@@ -6,6 +6,8 @@ import re
 from bs4 import BeautifulSoup
 import os
 import urllib.request
+import time
+import threading
 
 # --- CONFIG ---
 
@@ -105,15 +107,57 @@ def check_stock(symbol):
             message = f"\ud83d\udd14 {symbol} Alert:\n" + "\n".join(alert_msgs)
             send_telegram_message(message)
             print(message)
+            # Save the alert to a file for /alerts command
+            with open("current_alerts.txt", "a") as f:
+                f.write(message + "\n\n")
         else:
             print(f"No alert for {symbol}")
     except Exception as e:
         print(f"Error checking {symbol}: {e}")
 
-def main():
-    for symbol in WATCHLIST:
-        check_stock(symbol)
+# --- TELEGRAM POLLING ---
+
+def telegram_polling():
+    last_update_id = None
+    while True:
+        try:
+            url = f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/getUpdates"
+            if last_update_id:
+                url += f"?offset={last_update_id + 1}"
+            resp = requests.get(url)
+            data = resp.json()
+            if data.get("ok"):
+                for result in data["result"]:
+                    last_update_id = result["update_id"]
+                    message = result.get("message", {})
+                    text = message.get("text", "")
+                    chat_id = message.get("chat", {}).get("id")
+                    if text.strip().lower() == "/alerts":
+                        try:
+                            with open("current_alerts.txt", "r") as f:
+                                alerts = f.read().strip()
+                            if not alerts:
+                                alerts = "No current alerts."
+                        except FileNotFoundError:
+                            alerts = "No current alerts."
+                        send_telegram_message(alerts)
+        except Exception as e:
+            print(f"Error in telegram polling: {e}")
+        time.sleep(5)
+
+# --- MAIN THREADING LOGIC ---
+
+def stock_monitoring_loop():
+    while True:
+        for symbol in WATCHLIST:
+            check_stock(symbol)
+        time.sleep(60 * 15)  # Check every 15 minutes
 
 if __name__ == "__main__":
-    main()
+    t1 = threading.Thread(target=stock_monitoring_loop, daemon=True)
+    t2 = threading.Thread(target=telegram_polling, daemon=True)
+    t1.start()
+    t2.start()
+    t1.join()
+    t2.join()
 
